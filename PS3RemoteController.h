@@ -3,11 +3,8 @@
 
 #include "Arduino.h"
 
-#if USBMODE
 #include "PS3USB.h"
-#else
 #include "PS3BT.h"
-#endif
 
 #include <usbhub.h>
 #ifdef dobogusinclude
@@ -17,23 +14,22 @@
 
 namespace PS3RemoteController
 {
-	static USB Usb;
-#if USBMODE
-	static PS3USB PS3( &Usb );
+	USB Usb;
+	PS3USB PS3_Usb( &Usb );
+	BTD Btd( &Usb );
+	PS3BT PS3_Bt( &Btd );
+    
+    typedef ButtonEnum Button; 
+}
+
+#define usb PS3RemoteController::Usb
+
+#ifdef USBMODE
+#define controller PS3RemoteController::PS3_Usb
 #else
-	static BTD Btd( &Usb );
-	static PS3BT PS3( &Btd );
+#define controller PS3RemoteController::PS3_Bt
 #endif
 
-	class Controller
-	{
-	private:
-
-
-	public:
-		Controller();
-		int init();
-	};
-}
+#define Button PS3RemoteController::Button
 
 //#include "PS3RemoteController.cpp"
