@@ -31,8 +31,8 @@ namespace PS3RemoteController
 
 
 	public:
-
 		Controller();
+		int init();
 	};
 }
 
