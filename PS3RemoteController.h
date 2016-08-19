@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "Arduino.h"
 
 #if USBMODE
@@ -13,20 +15,25 @@
 #include <SPI.h>
 #endif
 
-class PS3RemoteController
+namespace PS3RemoteController
 {
-private:
-
-
-public:
-	USB Usb;
+	static USB Usb;
 #if USBMODE
-	PS3USB PS3( &Usb );
+	static PS3USB PS3( &Usb );
 #else
-	BTD Btd( &Usb );
-	PS3BT PS3( &Btd );
+	static BTD Btd( &Usb );
+	static PS3BT PS3( &Btd );
 #endif
 
+	class Controller
+	{
+	private:
 
-	PS3RemoteController();
-};
+
+	public:
+
+		Controller();
+	};
+}
+
+//#include "PS3RemoteController.cpp"
