@@ -49,13 +49,29 @@ namespace PS3RemoteController
             void task() { Usb.Task(); }
             void disconnect() { PS3_Bt.disconnect(); }
             bool connected() { return PS3_Bt.PS3Connected; }
+            void setLed( bool led1, bool led2, bool led3, bool led4 )
+            {
+                if ( led1 ) PS3_Bt.setLedOn( LED1 );
+                else PS3_Bt.setLedOff( LED1 );
+                if ( led2 ) PS3_Bt.setLedOn( LED2 );
+                else PS3_Bt.setLedOff( LED2 );
+                if ( led3 ) PS3_Bt.setLedOn( LED3 );
+                else PS3_Bt.setLedOff( LED3 );
+                if ( led4 ) PS3_Bt.setLedOn( LED4 );
+                else PS3_Bt.setLedOff( LED4 );
+            }
+            void setLedToggle( bool led1, bool led2, bool led3, bool led4 )
+            {
+                if ( led1 ) PS3_Bt.setLedToggle( LED1 );
+                if ( led2 ) PS3_Bt.setLedToggle( LED2 );
+                if ( led3 ) PS3_Bt.setLedToggle( LED3 );
+                if ( led4 ) PS3_Bt.setLedToggle( LED4 );
+            }
             //float getAngle( AngleEnum a ) { return PS3_Bt.getAngle( a ); };
             /* 
             センサに関して
             
-            取得すると全体的にラグが発生するようになる。
-
-            aX, aY, aZ
+           aX, aY, aZ
             100で1gっぽい。500で0g, 400で-1g
             軸の向きは、リモコンの手前側が+Y, 左が+X、上が+Z
             スタビライゼーションしているっぽい。値の更新が少し遅い
