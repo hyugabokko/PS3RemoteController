@@ -49,6 +49,15 @@ namespace PS3RemoteController
             void task() { Usb.Task(); }
             void disconnect() { PS3_Bt.disconnect(); }
             bool connected() { return PS3_Bt.PS3Connected; }
+            void setRumble( bool state )
+            {
+                if ( state ) PS3_Bt.setRumbleOn( RumbleLow );
+                else PS3_Bt.setRumbleOff();
+            } 
+            void setRumbleLoop( unsigned int num )
+            {
+                for ( int i = 0; i < num; i++ ) { setRumble( 1 ); setRumble( 0 ); }
+            } 
             void setLed( bool led1, bool led2, bool led3, bool led4 )
             {
                 if ( led1 ) PS3_Bt.setLedOn( LED1 );
