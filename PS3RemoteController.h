@@ -17,19 +17,23 @@ namespace PS3RemoteController
 	BTD Btd( &Usb );
 	PS3BT PS3_Bt( &Btd );
 
-    typedef ButtonEnum Button;
+    const unsigned short buttonNum = 17;
+
+    //typedef ButtonEnum Button;
 
     class Controller {
         private:
+            // structs
+            struct StickXY { uint8_t x, y; };
 
         public:
 	        // structs
-            struct Stick { uint8_t x, y; };
-            struct Sticks { Stick L, R; };
-            
+            struct Stick { StickXY L, R; };
 
             // var
-            Sticks sticks;
+            Stick stick;
+            bool buttonPress[ buttonNum ];
+            bool buttonClick[ buttonNum ];
 
             /////
             //  functions
@@ -39,11 +43,19 @@ namespace PS3RemoteController
             void disconnect() { PS3_Bt.disconnect(); }
             bool connected() { return PS3_Bt.PS3Connected; }
 
-
             void update()
             {
-    	        sticks.L.x = PS3_Bt.getAnalogHat( LeftHatX );
-	            sticks.L.x = PS3_Bt.getAnalogHat( LeftHatY );
+                // get button
+                for ( int i = 0; i < buttonNum; i++ )
+                    buttonPress[ i ] = PS3_Bt.getButtonPress( ( ButtonEnum )i );
+                for ( int i = 0; i < buttonNum; i++ )
+                    buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i );
+
+                // get sticks
+    	        stick.L.x = PS3_Bt.getAnalogHat( LeftHatX );
+	            stick.L.y = PS3_Bt.getAnalogHat( LeftHatY );
+    	        stick.R.x = PS3_Bt.getAnalogHat( RightHatX );
+	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
             }
     };
 }
