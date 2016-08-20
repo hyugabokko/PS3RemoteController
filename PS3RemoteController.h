@@ -36,8 +36,8 @@ namespace PS3RemoteController
 
             // var
             Stick stick;
-            bool buttonPress[ buttonNum ];
-            bool buttonClick[ buttonNum ];
+            bool buttonPress[ BUTTON_NUM ];
+            bool buttonClick[ BUTTON_NUM ];
             float pitch, roll;
             Acc acc;
             Gyro gyro;
@@ -79,9 +79,9 @@ namespace PS3RemoteController
             void update( bool sensorsVal = 0 )
             {
                 // get button
-                for ( int i = 0; i < buttonNum; i++ )
+                for ( int i = 0; i < BUTTON_NUM; i++ )
                     buttonPress[ i ] = PS3_Bt.getButtonPress( ( ButtonEnum )i );
-                for ( int i = 0; i < buttonNum; i++ )
+                for ( int i = 0; i < BUTTON_NUM; i++ )
                     buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i );
 
                 // get sticks
@@ -91,7 +91,7 @@ namespace PS3RemoteController
 	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
 
                 // get sensors
-                if ( rawSensorsVal ) {
+                if ( sensorsVal ) {
                     pitch = PS3_Bt.getAngle( Pitch );
                     roll = PS3_Bt.getAngle( Roll );
                     acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
