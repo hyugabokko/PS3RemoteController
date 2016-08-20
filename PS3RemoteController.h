@@ -29,21 +29,38 @@ namespace PS3RemoteController
         public:
 	        // structs
             struct Stick { StickXY L, R; };
+            struct Acc { int x, y, z; };
+            struct Gyro { int z; };
 
             // var
             Stick stick;
             bool buttonPress[ buttonNum ];
             bool buttonClick[ buttonNum ];
+            Acc acc;
+            Gyro gyro;
 
             /////
             //  functions
             /////
-            int init() { return Usb.Init(); }
+            int init() { gyro.x = 0; gyro.y = 0; gyro.z = 0; return Usb.Init(); }
             void task() { Usb.Task(); }
             void disconnect() { PS3_Bt.disconnect(); }
             bool connected() { return PS3_Bt.PS3Connected; }
+            uint16_t getSensor( SensorEnum a ) { return PS3_Bt.getSensor( a ); };
+            /* 
+            センサに関して
 
-            void update()
+            aX, aY, aZ
+            100で1gっぽい。500で0g, 400で-1g
+            軸の向きは、リモコンの手前側が+Y, 左が+X、上が+Z
+            スタビライゼーションしているっぽい。値の更新が少し遅い
+
+            gZ
+            CWで+, CCWで-, 動いていない時は500
+             */
+
+
+            void update( bool sensors = 0 )
             {
                 // get button
                 for ( int i = 0; i < buttonNum; i++ )
@@ -56,6 +73,14 @@ namespace PS3RemoteController
 	            stick.L.y = PS3_Bt.getAnalogHat( LeftHatY );
     	        stick.R.x = PS3_Bt.getAnalogHat( RightHatX );
 	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
+
+                // get sensors
+                if ( sensors ) {
+                    acc.x = PS3_Bt.getSensor( aX ) - 500;
+                    acc.y = PS3_Bt.getSensor( aY ) - 500;
+                    acc.z = PS3_Bt.getSensor( aZ ) - 500;
+                    gyro.z = PS3_Bt.getSensor( gZ ) - 500;
+                }
             }
     };
 }
