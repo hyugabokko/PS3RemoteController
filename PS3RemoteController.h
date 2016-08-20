@@ -26,9 +26,20 @@ namespace PS3RemoteController
 	        // structs
             struct Stick { uint8_t x, y; };
             struct Sticks { Stick L, R; };
+            
 
             // var
             Sticks sticks;
+
+            /////
+            //  functions
+            /////
+            int init() { return Usb.Init(); }
+            void task() { Usb.Task(); }
+            void disconnect() { PS3_Bt.disconnect(); }
+            bool connected() { return PS3_Bt.PS3Connected; }
+
+
             void update()
             {
     	        sticks.L.x = PS3_Bt.getAnalogHat( LeftHatX );
@@ -37,13 +48,13 @@ namespace PS3RemoteController
     };
 }
 
-#define usb PS3RemoteController::Usb
+//#define usb PS3RemoteController::Usb
 
-#ifdef USBMODE
-#define controller PS3RemoteController::PS3_Usb
-#else
-#define controller PS3RemoteController::PS3_Bt
-#endif
+//#ifdef USBMODE
+//#define controller PS3RemoteController::PS3_Usb
+//#else
+//#define controller PS3RemoteController::PS3_Bt
+//#endif
 
 //#define Button PS3RemoteController::Button
 
