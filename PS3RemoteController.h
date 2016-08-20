@@ -17,7 +17,7 @@ namespace PS3RemoteController
 	BTD Btd( &Usb );
 	PS3BT PS3_Bt( &Btd );
 
-    const unsigned short buttonNum = 17;
+    const unsigned short BUTTON_NUM = 17;
 
     const float ZERO_G = 511.5f; // 1.65/3.3*1023 (1.65V)
 
@@ -54,9 +54,9 @@ namespace PS3RemoteController
                 if ( state ) PS3_Bt.setRumbleOn( RumbleLow );
                 else PS3_Bt.setRumbleOff();
             } 
-            void setRumbleLoop( unsigned int num )
+            void setRumbleMs( unsigned int ms )
             {
-                for ( int i = 0; i < num; i++ ) { setRumble( 1 ); setRumble( 0 ); }
+                setRumble( 1 ); delay( ms ); setRumble( 0 );
             } 
             void setLed( bool led1, bool led2, bool led3, bool led4 )
             {
@@ -76,21 +76,7 @@ namespace PS3RemoteController
                 if ( led3 ) PS3_Bt.setLedToggle( LED3 );
                 if ( led4 ) PS3_Bt.setLedToggle( LED4 );
             }
-            //float getAngle( AngleEnum a ) { return PS3_Bt.getAngle( a ); };
-            /* 
-            センサに関して
-            
-           aX, aY, aZ
-            100で1gっぽい。500で0g, 400で-1g
-            軸の向きは、リモコンの手前側が+Y, 左が+X、上が+Z
-            スタビライゼーションしているっぽい。値の更新が少し遅い
-
-            gZ
-            CWで+, CCWで-, 動いていない時は500
-             */
-
-
-            void update( bool rawSensorsVal = 0 )
+            void update( bool sensorsVal = 0 )
             {
                 // get button
                 for ( int i = 0; i < buttonNum; i++ )
@@ -116,15 +102,3 @@ namespace PS3RemoteController
             }
     };
 }
-
-//#define usb PS3RemoteController::Usb
-
-//#ifdef USBMODE
-//#define controller PS3RemoteController::PS3_Usb
-//#else
-//#define controller PS3RemoteController::PS3_Bt
-//#endif
-
-//#define Button PS3RemoteController::Button
-
-//#include "PS3RemoteController.cpp"
