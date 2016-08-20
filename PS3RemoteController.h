@@ -91,7 +91,7 @@ namespace PS3RemoteController
 	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
 
                 // get sensors
-                if ( rawSensorsVal ) {
+                if ( sensorsVal ) {
                     pitch = PS3_Bt.getAngle( Pitch );
                     roll = PS3_Bt.getAngle( Roll );
                     acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
