@@ -19,6 +19,8 @@ namespace PS3RemoteController
 
     const unsigned short buttonNum = 17;
 
+    const float ZERO_G = 511.5f; // 1.65/3.3*1023 (1.65V)
+
     //typedef ButtonEnum Button;
 
     class Controller {
@@ -36,19 +38,22 @@ namespace PS3RemoteController
             Stick stick;
             bool buttonPress[ buttonNum ];
             bool buttonClick[ buttonNum ];
+            float pitch, roll;
             Acc acc;
             Gyro gyro;
 
             /////
             //  functions
             /////
-            int init() { gyro.x = 0; gyro.y = 0; gyro.z = 0; return Usb.Init(); }
+            int init() { gyro.z = 0; return Usb.Init(); }
             void task() { Usb.Task(); }
             void disconnect() { PS3_Bt.disconnect(); }
             bool connected() { return PS3_Bt.PS3Connected; }
-            uint16_t getSensor( SensorEnum a ) { return PS3_Bt.getSensor( a ); };
+            //float getAngle( AngleEnum a ) { return PS3_Bt.getAngle( a ); };
             /* 
             センサに関して
+            
+            取得すると全体的にラグが発生するようになる。
 
             aX, aY, aZ
             100で1gっぽい。500で0g, 400で-1g
@@ -60,7 +65,7 @@ namespace PS3RemoteController
              */
 
 
-            void update( bool sensors = 0 )
+            void update( bool rawSensorsVal = 0 )
             {
                 // get button
                 for ( int i = 0; i < buttonNum; i++ )
@@ -75,11 +80,13 @@ namespace PS3RemoteController
 	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
 
                 // get sensors
-                if ( sensors ) {
-                    acc.x = PS3_Bt.getSensor( aX ) - 500;
-                    acc.y = PS3_Bt.getSensor( aY ) - 500;
-                    acc.z = PS3_Bt.getSensor( aZ ) - 500;
-                    gyro.z = PS3_Bt.getSensor( gZ ) - 500;
+                if ( rawSensorsVal ) {
+                    pitch = PS3_Bt.getAngle( Pitch );
+                    roll = PS3_Bt.getAngle( Roll );
+                    acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
+                    acc.y = PS3_Bt.getSensor( aY ) - ZERO_G;
+                    acc.z = PS3_Bt.getSensor( aZ ) - ZERO_G;
+                    gyro.z = PS3_Bt.getSensor( gZ ) - ZERO_G;
                 }
             }
     };
