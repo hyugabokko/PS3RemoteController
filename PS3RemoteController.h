@@ -1,8 +1,13 @@
 
 #include "Arduino.h"
 
+#ifdef PS3_USE_USB
 #include "PS3USB.h"
+#endif
+
+#ifdef PS3_USE_BT
 #include "PS3BT.h"
+#endif
 
 #include <usbhub.h>
 #ifdef dobogusinclude
@@ -13,9 +18,15 @@
 namespace PS3RemoteController
 {
 	USB Usb;
-	PS3USB PS3_Usb( &Usb );
-	BTD Btd( &Usb );
-	PS3BT PS3_Bt( &Btd );
+
+    #if defined( PS3_USE_USB )
+	    PS3USB PS3_Usb( &Usb );
+    #endif
+
+    #if defined( PS3_USE_BT )
+	    BTD Btd( &Usb );
+	    PS3BT PS3_Bt( &Btd );
+    #endif
 
     const unsigned short BUTTON_NUM = 17;
 
@@ -28,7 +39,12 @@ namespace PS3RemoteController
             // structs
             struct StickXY { uint8_t x, y; };
 
+            // enum
+            enum MODE { PS3_BT, PS3_USB };
+
             bool calibrated = 0;
+
+            MODE mode;
 
         public:
 	        // structs
@@ -48,14 +64,63 @@ namespace PS3RemoteController
             /////
             //  functions
             /////
-            int init() { gyro.z = 0; return Usb.Init(); }
+            int init()
+            {
+                stick.L.x = 127;
+                stick.L.y = 127;
+                stick.R.x = 127;
+                stick.R.y = 127;
+                gyro.z = 0;
+                return Usb.Init();
+            }
             void task() { Usb.Task(); }
-            void disconnect() { PS3_Bt.disconnect(); }
-            bool connected() { return PS3_Bt.PS3Connected; }
+            void disconnect()
+            {
+                #if defined( PS3_USE_USB )
+                    //PS3_Usb.disconnect();
+                #elif defined( PS3_USE_BT )
+                    PS3_Bt.disconnect();
+                #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                switch ( mode ) {
+                        //case PS3_USB: PS3_Usb.disconnect(); break;
+                        case PS3_BT: PS3_Bt.disconnect(); break;
+                        default: break;
+                    }
+                #endif
+            }
+            bool connected()
+            {
+                #if defined( PS3_USE_USB )
+                    if ( PS3_Usb.PS3Connected ) { mode = PS3_USB; return 1; }
+                    else return 0;
+                #elif defined( PS3_USE_BT )
+                    if ( PS3_Bt.PS3Connected ) { mode = PS3_BT; return 1; }
+                    else return 0;
+                #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+                    if ( PS3_Usb.PS3Connected ) { mode = PS3_USB; return 1; }
+                    else if ( PS3_Bt.PS3Connected ) { mode = PS3_BT; return 1; }
+                    else return 0;
+                #endif
+            }
             void setRumble( bool state )
             {
-                if ( state ) PS3_Bt.setRumbleOn( RumbleLow );
-                else PS3_Bt.setRumbleOff();
+                #if defined( PS3_USB ) && defined( PS3_BT )
+	                switch ( mode ) {
+		                case PS3_USB: 
+                            if ( state ) PS3_Usb.setRumbleOn( RumbleLow );
+                            else PS3_Usb.setRumbleOff(); break;
+                        case PS3_BT:
+                            if ( state ) PS3_Bt.setRumbleOn( RumbleLow );
+                            else PS3_Bt.setRumbleOff();  break;
+                        default: break;
+                    }
+                #elif defined( PS3_USB )
+                    if ( state ) PS3_Usb.setRumbleOn( RumbleLow );
+                    else PS3_Usb.setRumbleOff();
+                #elif defined( PS3_BT )
+                    if ( state ) PS3_Bt.setRumbleOn( RumbleLow );
+                    else PS3_Bt.setRumbleOff();
+                #endif
             }
             void setRumbleMs( unsigned int ms )
             {
@@ -63,36 +128,136 @@ namespace PS3RemoteController
             } 
             void setLed( bool led1, bool led2, bool led3, bool led4 )
             {
-                if ( led1 ) PS3_Bt.setLedOn( LED1 );
-                else PS3_Bt.setLedOff( LED1 );
-                if ( led2 ) PS3_Bt.setLedOn( LED2 );
-                else PS3_Bt.setLedOff( LED2 );
-                if ( led3 ) PS3_Bt.setLedOn( LED3 );
-                else PS3_Bt.setLedOff( LED3 );
-                if ( led4 ) PS3_Bt.setLedOn( LED4 );
-                else PS3_Bt.setLedOff( LED4 );
+                #if defined( PS3_USE_USB )
+                    if ( led1 ) PS3_Usb.setLedOn( LED1 );
+                    else PS3_Usb.setLedOff( LED1 );
+                    if ( led2 ) PS3_Usb.setLedOn( LED2 );
+                    else PS3_Usb.setLedOff( LED2 );
+                    if ( led3 ) PS3_Usb.setLedOn( LED3 );
+                    else PS3_Usb.setLedOff( LED3 );
+                    if ( led4 ) PS3_Usb.setLedOn( LED4 );
+                    else PS3_Usb.setLedOff( LED4 );
+                #elif defined( PS3_USE_BT )
+                    if ( led1 ) PS3_Bt.setLedOn( LED1 );
+                    else PS3_Bt.setLedOff( LED1 );
+                    if ( led2 ) PS3_Bt.setLedOn( LED2 );
+                    else PS3_Bt.setLedOff( LED2 );
+                    if ( led3 ) PS3_Bt.setLedOn( LED3 );
+                    else PS3_Bt.setLedOff( LED3 );
+                    if ( led4 ) PS3_Bt.setLedOn( LED4 );
+                    else PS3_Bt.setLedOff( LED4 );
+                #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                switch ( mode ) {
+		                case PS3_USB:
+                            if ( led1 ) PS3_Usb.setLedOn( LED1 );
+                            else PS3_Usb.setLedOff( LED1 );
+                            if ( led2 ) PS3_Usb.setLedOn( LED2 );
+                            else PS3_Usb.setLedOff( LED2 );
+                            if ( led3 ) PS3_Usb.setLedOn( LED3 );
+                            else PS3_Usb.setLedOff( LED3 );
+                            if ( led4 ) PS3_Usb.setLedOn( LED4 );
+                            else PS3_Usb.setLedOff( LED4 );
+                            break;
+                        case PS3_BT:
+                            if ( led1 ) PS3_Bt.setLedOn( LED1 );
+                            else PS3_Bt.setLedOff( LED1 );
+                            if ( led2 ) PS3_Bt.setLedOn( LED2 );
+                            else PS3_Bt.setLedOff( LED2 );
+                            if ( led3 ) PS3_Bt.setLedOn( LED3 );
+                            else PS3_Bt.setLedOff( LED3 );
+                            if ( led4 ) PS3_Bt.setLedOn( LED4 );
+                            else PS3_Bt.setLedOff( LED4 );
+                            break;
+                        default: break;
+                    }
+                #endif
             }
             void setLedToggle( bool led1, bool led2, bool led3, bool led4 )
             {
-                if ( led1 ) PS3_Bt.setLedToggle( LED1 );
-                if ( led2 ) PS3_Bt.setLedToggle( LED2 );
-                if ( led3 ) PS3_Bt.setLedToggle( LED3 );
-                if ( led4 ) PS3_Bt.setLedToggle( LED4 );
+                #if defined( PS3_USE_USB )
+                    if ( led1 ) PS3_Usb.setLedToggle( LED1 );
+                    if ( led2 ) PS3_Usb.setLedToggle( LED2 );
+                    if ( led3 ) PS3_Usb.setLedToggle( LED3 );
+                    if ( led4 ) PS3_Usb.setLedToggle( LED4 );
+                #elif defined( PS3_USE_BT )
+                    if ( led1 ) PS3_Bt.setLedToggle( LED1 );
+                    if ( led2 ) PS3_Bt.setLedToggle( LED2 );
+                    if ( led3 ) PS3_Bt.setLedToggle( LED3 );
+                    if ( led4 ) PS3_Bt.setLedToggle( LED4 );
+                #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                switch ( mode ) {
+		                case PS3_USB:
+                            if ( led1 ) PS3_Usb.setLedToggle( LED1 );
+                            if ( led2 ) PS3_Usb.setLedToggle( LED2 );
+                            if ( led3 ) PS3_Usb.setLedToggle( LED3 );
+                            if ( led4 ) PS3_Usb.setLedToggle( LED4 ); break;
+                        case PS3_BT:
+                            if ( led1 ) PS3_Bt.setLedToggle( LED1 );
+                            if ( led2 ) PS3_Bt.setLedToggle( LED2 );
+                            if ( led3 ) PS3_Bt.setLedToggle( LED3 );
+                            if ( led4 ) PS3_Bt.setLedToggle( LED4 ); break;
+                        default: break;
+                    }
+                #endif
             }
             void update( bool sensorsVal = 0 )
             {
                 // get button
-                for ( int i = 0; i < BUTTON_NUM; i++ )
-                    buttonPress[ i ] = PS3_Bt.getButtonPress( ( ButtonEnum )i );
-                for ( int i = 0; i < BUTTON_NUM; i++ )
-                    buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i );
+                for ( int i = 0; i < BUTTON_NUM; i++ ) {
+                    #if defined( PS3_USE_USB )
+                        buttonPress[ i ] = PS3_Usb.getButtonPress( ( ButtonEnum )i );
+                    #elif defined( PS3_USE_BT )
+                        buttonPress[ i ] = PS3_Bt.getButtonPress( ( ButtonEnum )i );
+                    #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                    switch ( mode ) {
+		                    case PS3_USB: buttonPress[ i ] = PS3_Usb.getButtonPress( ( ButtonEnum )i ); break;
+                            case PS3_BT: buttonPress[ i ] = PS3_Bt.getButtonPress( ( ButtonEnum )i ); break;
+                            default: break;
+                        }
+                    #endif
+                }
+                for ( int i = 0; i < BUTTON_NUM; i++ ) {
+                    #if defined( PS3_USE_USB )
+                        buttonClick[ i ] = PS3_Usb.getButtonClick( ( ButtonEnum )i );
+                    #elif defined( PS3_USE_BT )
+                        buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i );
+                        Serial.println( "click update" );
+                    #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                    switch ( mode ) {
+		                    case PS3_USB: buttonClick[ i ] = PS3_Usb.getButtonClick( ( ButtonEnum )i ); break;
+                            case PS3_BT: buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i ); break;
+                            default: break;
+                        }
+                    #endif
+                }
 
                 // get sticks
-    	        stick.L.x = PS3_Bt.getAnalogHat( LeftHatX );
-	            stick.L.y = PS3_Bt.getAnalogHat( LeftHatY );
-    	        stick.R.x = PS3_Bt.getAnalogHat( RightHatX );
-	            stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
-                if ( calibrated ) {
+                #if defined( PS3_USE_USB )
+                    stick.L.x = PS3_Usb.getAnalogHat( LeftHatX );
+	                stick.L.y = PS3_Usb.getAnalogHat( LeftHatY );
+    	            stick.R.x = PS3_Usb.getAnalogHat( RightHatX );
+	                stick.R.y = PS3_Usb.getAnalogHat( RightHatY );
+                #elif defined( PS3_USE_BT )
+                    stick.L.x = PS3_Bt.getAnalogHat( LeftHatX );
+	                stick.L.y = PS3_Bt.getAnalogHat( LeftHatY );
+    	            stick.R.x = PS3_Bt.getAnalogHat( RightHatX );
+	                stick.R.y = PS3_Bt.getAnalogHat( RightHatY );
+                #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                switch ( mode ) {
+		                case PS3_USB:
+                            stick.L.x = PS3_Usb.getAnalogHat( LeftHatX );
+	                        stick.L.y = PS3_Usb.getAnalogHat( LeftHatY );
+    	                    stick.R.x = PS3_Usb.getAnalogHat( RightHatX );
+	                        stick.R.y = PS3_Usb.getAnalogHat( RightHatY ); break;
+                        case PS3_BT: 
+                            stick.L.x = PS3_Bt.getAnalogHat( LeftHatX );
+	                        stick.L.y = PS3_Bt.getAnalogHat( LeftHatY );
+    	                    stick.R.x = PS3_Bt.getAnalogHat( RightHatX );
+	                        stick.R.y = PS3_Bt.getAnalogHat( RightHatY ); break;
+                        default: break;
+                    }
+                #endif
+    	        if ( calibrated ) {
                     stick.L.x = map( stick.L.x, 0, 255, minStick.L.x, maxStick.L.x );
                     stick.L.y = map( stick.L.y, 0, 255, minStick.L.y, maxStick.L.y );
                     stick.R.x = map( stick.R.x, 0, 255, minStick.R.x, maxStick.R.x );
@@ -101,12 +266,39 @@ namespace PS3RemoteController
                 
                 // get sensors
                 if ( sensorsVal ) {
-                    pitch = PS3_Bt.getAngle( Pitch );
-                    roll = PS3_Bt.getAngle( Roll );
-                    acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
-                    acc.y = PS3_Bt.getSensor( aY ) - ZERO_G;
-                    acc.z = PS3_Bt.getSensor( aZ ) - ZERO_G;
-                    gyro.z = PS3_Bt.getSensor( gZ ) - ZERO_G;
+                    #if defined( PS3_USE_USB )
+                        pitch = PS3_Usb.getAngle( Pitch );
+                        roll = PS3_Usb.getAngle( Roll );
+                        acc.x = PS3_Usb.getSensor( aX ) - ZERO_G;
+                        acc.y = PS3_Usb.getSensor( aY ) - ZERO_G;
+                        acc.z = PS3_Usb.getSensor( aZ ) - ZERO_G;
+                        gyro.z = PS3_Usb.getSensor( gZ ) - ZERO_G;
+                    #elif defined( PS3_USE_BT )
+                        pitch = PS3_Bt.getAngle( Pitch );
+                        roll = PS3_Bt.getAngle( Roll );
+                        acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
+                        acc.y = PS3_Bt.getSensor( aY ) - ZERO_G;
+                        acc.z = PS3_Bt.getSensor( aZ ) - ZERO_G;
+                        gyro.z = PS3_Bt.getSensor( gZ ) - ZERO_G;
+                    #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
+	                    switch ( mode ) {
+		                    case PS3_USB:
+                                pitch = PS3_Usb.getAngle( Pitch );
+                                roll = PS3_Usb.getAngle( Roll );
+                                acc.x = PS3_Usb.getSensor( aX ) - ZERO_G;
+                                acc.y = PS3_Usb.getSensor( aY ) - ZERO_G;
+                                acc.z = PS3_Usb.getSensor( aZ ) - ZERO_G;
+                                gyro.z = PS3_Usb.getSensor( gZ ) - ZERO_G; break;
+                            case PS3_BT: 
+                                pitch = PS3_Bt.getAngle( Pitch );
+                                roll = PS3_Bt.getAngle( Roll );
+                                acc.x = PS3_Bt.getSensor( aX ) - ZERO_G;
+                                acc.y = PS3_Bt.getSensor( aY ) - ZERO_G;
+                                acc.z = PS3_Bt.getSensor( aZ ) - ZERO_G;
+                                gyro.z = PS3_Bt.getSensor( gZ ) - ZERO_G; break;
+                            default: break;
+                        }
+                    #endif
                 }
             }
             void calibrate()
