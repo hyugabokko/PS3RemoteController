@@ -1,0 +1,9 @@
+#if defined( PS3_USB ) && defined( PS3_BT )
+	switch ( mode ) {
+		case PS3_USB:  break;
+        case PS3_BT:  break;
+        default: break;
+    }
+#elif defined( PS3_USB )
+#elif defined( PS3_BT )
+#endif
