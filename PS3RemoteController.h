@@ -221,7 +221,6 @@ namespace PS3RemoteController
                         buttonClick[ i ] = PS3_Usb.getButtonClick( ( ButtonEnum )i );
                     #elif defined( PS3_USE_BT )
                         buttonClick[ i ] = PS3_Bt.getButtonClick( ( ButtonEnum )i );
-                        Serial.println( "click update" );
                     #elif defined( PS3_USE_USB ) && defined( PS3_USE_BT )
 	                    switch ( mode ) {
 		                    case PS3_USB: buttonClick[ i ] = PS3_Usb.getButtonClick( ( ButtonEnum )i ); break;
